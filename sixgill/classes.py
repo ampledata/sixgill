@@ -3,7 +3,10 @@
 
 """SixGill Core Classes."""
 
+import hashlib
+import json
 import logging
+import logging.handlers
 import threading
 import time
 import pynmea2
@@ -123,7 +126,7 @@ class SixGillReader(threading.Thread):
                         if '+CENG: 0,' in sd:
                             data_frame = {
                                 'ts': time.time(),
-                                'ceng0': sd,
+                                'ceng0': sd.lstrip().rstrip(),
                             }
                             if self.gps is not None:
                                 data_frame.update(self.gps.gps_props)
@@ -142,6 +145,13 @@ class SixGillWorker(threading.Thread):
         _console_handler.setFormatter(sixgill.constants.LOG_FORMAT)
         _logger.addHandler(_console_handler)
         _logger.propagate = False
+
+    _udp_handler = logging.handlers.DatagramHandler('tomato.undef.net', 19514)
+    _udp_handler.setLevel(logging.INFO)
+    _udp_handler.setFormatter(
+        logging.Formatter('%(asctime)s sixgill %(message)s'))
+    _logger.addHandler(_udp_handler)
+    _logger.propagate = False
 
     def __init__(self, queue):
         threading.Thread.__init__(self)
@@ -170,10 +180,20 @@ class SixGillWorker(threading.Thread):
         while not self.stopped():
             event = self.queue.get()
             self._logger.debug('event=%s', event)
+            event['timestamp'] = None
+
             event_details = sixgill.parse_ceng(event['ceng0'])
             event.update(event_details)
-            #self.bot.rx_event(event)
-            print event
+
+            const_vals = ['arfcn', 'mcc', 'mnc', 'cell_id', 'lac', 'txp']
+            consts = ','.join([event_details[y] for y in const_vals])
+            const_hash = hashlib.md5(consts).hexdigest()
+
+            event.update({'consts': consts})
+            event.update({'const_hash': const_hash})
+
+            self._logger.info(json.dumps(event))
+
             self.queue.task_done()
 
 
