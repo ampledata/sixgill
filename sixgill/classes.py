@@ -148,9 +148,9 @@ class SixGillWorker(threading.Thread):
 
     event_log = logging.getLogger(__name__)
     _udp_handler = logging.handlers.DatagramHandler(
-        EVENT_LOG_HOST, EVENT_LOG_PORT)
-    _udp_handler.setLevel(EVENT_LOG_LEVEL)
-    _udp_handler.setFormatter(EVENT_LOG_FORMAT)
+        sixgill.constants.EVENT_LOG_HOST, sixgill.constants.EVENT_LOG_PORT)
+    _udp_handler.setLevel(sixgill.constants.EVENT_LOG_LEVEL)
+    _udp_handler.setFormatter(sixgill.constants.EVENT_LOG_FORMAT)
     event_log.addHandler(_udp_handler)
     event_log.propagate = False
 
