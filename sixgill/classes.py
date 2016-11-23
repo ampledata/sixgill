@@ -146,12 +146,13 @@ class SixGillWorker(threading.Thread):
         _logger.addHandler(_console_handler)
         _logger.propagate = False
 
-    _udp_handler = logging.handlers.DatagramHandler('tomato.undef.net', 19514)
-    _udp_handler.setLevel(logging.INFO)
-    _udp_handler.setFormatter(
-        logging.Formatter('%(asctime)s sixgill %(message)s'))
-    _logger.addHandler(_udp_handler)
-    _logger.propagate = False
+    event_log = logging.getLogger(__name__)
+    _udp_handler = logging.handlers.DatagramHandler(
+        EVENT_LOG_HOST, EVENT_LOG_PORT)
+    _udp_handler.setLevel(EVENT_LOG_LEVEL)
+    _udp_handler.setFormatter(EVENT_LOG_FORMAT)
+    event_log.addHandler(_udp_handler)
+    event_log.propagate = False
 
     def __init__(self, queue):
         threading.Thread.__init__(self)
@@ -192,7 +193,7 @@ class SixGillWorker(threading.Thread):
             event.update({'consts': consts})
             event.update({'const_hash': const_hash})
 
-            self._logger.info(json.dumps(event))
+            self.event_log.info(json.dumps(event))
 
             self.queue.task_done()
 

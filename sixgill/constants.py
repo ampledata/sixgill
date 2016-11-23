@@ -16,6 +16,11 @@ LOG_FORMAT = logging.Formatter(
     '%(asctime)s sixgill %(levelname)s %(name)s.%(funcName)s:%(lineno)d'
     ' - %(message)s')
 
+EVENT_LOG_LEVEL = logging.INFO
+EVENT_LOG_FORMAT = logging.Formatter('%(message)s')
+EVENT_LOG_HOST = 'sixgill.undef.net'
+EVENT_LOG_PORT = 19514
+
 SERIAL_TIMEOUT = 0.01
 READ_BYTES = 1000
 GPS_WARM_UP = 5
